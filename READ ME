@@ -1,6 +1,6 @@
 Welcome to Ferret Entropy Rational Trials.
 
 This code is still under construction, play at your own risk.
-Current issue:  stash arrays only retain 0th item when passed back from load method.
+Current issues:  change knitting bag to array to delete infinite balls of yarn.
 
 While scenerios are based on actual ferret behavior, No Ferrets Were Harmed in the Coding of this Game.
