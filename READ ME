@@ -4,14 +4,11 @@ This code is still under construction, play at your own risk.
 
 Quit at most times by typing quit, or q at the prompt. Let me know if you hit a place where this doesn't work.
 
-Upcoming projects:  create master array of all items
-                    randomize abuse
-                    create game win
+Upcoming projects:  randomize abuse
                     randomly load environmental items
                     dining room
                     kitchen
                     bathroom
-                    bedroom
                     traps
 
 While scenerios are based on actual ferret behavior, No Ferrets Were Harmed in the Coding of this Game.

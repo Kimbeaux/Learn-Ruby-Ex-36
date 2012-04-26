@@ -12,17 +12,31 @@ def stash(thing)
     lose("You decided to quit.")
   elsif next_move3.include? "sofa"
     $sofa_stash.push thing
-    puts "Sofa stash has the following: #{$sofa_stash.join(", ")}."
+    got_everything($sofa_stash)
+    puts "Now under the sofa you can see #{$sofa_stash.join(", ")}."
     where_do_you_go()
   elsif next_move3.include? "tv"
     $tv_stash.push thing
-    puts "OK, now under the TV, you can see #{$tv_stash.join(", ")}."
+    got_everything($tv_stash)
+    puts "OK, now under the TV you can see #{$tv_stash.join(", ")}."
+    where_do_you_go()
+  elsif next_move3.include? "bed"
+    $bed_stash.push thing    
+    got_everything($bed_stash)
+   puts "OK, now under the bed you can see #{$bed_stash.join(", ")}."
     where_do_you_go()
   elsif $typo < $typo_max
     $typo += 1
     stash(thing)
   else 
     lose("You're confused--that's no hiding place.")
+  end
+end
+
+# Determines if player/ferret has stolen everything.
+def got_everything(da_stash)
+  if da_stash.sort! == $everything.sort!
+    win("You stole everything.  You are Da FERT!")
   end
 end
 
@@ -63,11 +77,14 @@ def coffee_table()
     lose("You decided to quit.")
   elsif next_move.include? "y"
     steal_thing($table_stuff)
-  else
+  elsif $typo < $typo_max
+    $typo += 1
     puts "You can see a TV stand, a sofa and the cage you were first in."
     puts "The dining room is adjacent to the living room, but you can't see it well."
     puts "There is a hall leading away from the living and dining rooms."
     where_do_you_go()
+  else
+    lose("Clearly opposable thumbs aren't working out for you.")
   end
 end
 
@@ -86,7 +103,12 @@ puts "Do you want to steal any of those toys?"
     where_do_you_go()
   end
 end
-        
+
+# Stealing from the knitting bag
+def knitting_bag_theft()
+  steal_thing($knitting_bag)
+end
+      
 # Decision making w/r/t sofa:
 def sofa()
   puts "The sofa has exciting toys under it, and looks easily climbable."
@@ -97,8 +119,8 @@ def sofa()
   if next_move.include? "q"
     lose("You decided to quit.")
   elsif next_move.include? "climb"
-    puts "You can see the knitting bag next to the sofa.  It has exciting balls of knitting supplies."
-    puts "Do you hop in the knitting bag, try to steal a ball of yarn, or tunnel under the sofa cushions?"
+    puts "You can see the knitting bag next to the sofa.  It has knitting needles, #{$knitting_bag.join(", ")}."
+    puts "Do you hop in the knitting bag, try to steal something from the bag, or tunnel under the sofa cushions?"
     puts "Or do you jump to the coffee table?"
 
     prompt; next_move2 = gets.chomp
@@ -110,13 +132,7 @@ def sofa()
     elsif next_move2.include? "tunnel under"
       lose("Yawn.  What a great place for a nap.  Bet those humans never find you there.")
     elsif next_move2.include? "steal"
-      if $yarn_balls > 0 
-        $yarn_balls -= 1
-        thing = "yarn_ball"
-        stash(thing)
-      else
-        puts "Nothing to steal here."
-      end
+      knitting_bag_theft()     
     elsif next_move2.include? "coffee table" or next_move2.include? "jump"
       puts "An exciting leap lands you on top of the coffee table."
       coffee_table()
@@ -192,6 +208,178 @@ def tv_stand()
   end
 end
 
+# Decision making at the chest of drawers and laundry basket
+def chest_of_drawers()
+  puts "Working here.  Go somewhere else."
+  puts "Transporting you magically into the hall."
+  hall()
+end
+
+# Decision making under the bed
+def under_bed()
+  if $bed_stash.empty?
+    puts "Do you want to go somewhere else or crawl into the sleep sack?"
+  else
+    puts "Under the bed you see a snuggly sleep sack and #{$bed_stash.join(", ")}."
+    puts "Do you want to steal something, go somewhere else or crawl into the sleep sack?"
+  end
+
+  prompt; next_move = gets.chomp
+
+  if next_move.include? "q"
+    lose("Quitting now.")
+  elsif next_move.include? "crawl" or next_move.include? "sack"
+    lose("Feeling very sleepy.  Falling asleep on the job.")
+  elsif next_move.include? "steal"
+    steal_thing($bed_stash)
+  elsif next_move.include? "go"
+    puts "You come out from under the bed to find yourself near the door of the bedroom."
+    bedroom()
+  elsif $typo < $typo_max
+    $typo += 1
+    puts "What?  I don't think you're typing straight."
+    hall()
+  else
+    lose("Maybe you could type better if you were fuzzy-butted.")
+  end 
+end
+
+# Decision making on top of the bed
+def on_top_bed()
+  puts "In a feat of athletic prowess, you claw your way up the bedspread."
+  puts "Now you can see the top of the nightstand and there's nothing there."
+  puts "Do you want to climb down now?"
+
+  prompt; next_move = gets.chomp
+  
+  if next_move.include? "q"
+    lose("Quitting now.")
+  elsif next_move.include? "y"
+    puts "You climb off the bed to find yourself near the door of the bedroom."
+    bedroom()
+  elsif $typo < $typo_max
+    $typo += 1
+    puts "What?  I don't think you're typing straight."
+    hall()
+  else
+    lose("Maybe you could type better if you were fuzzy-butted.")
+  end 
+end
+  
+# Decision making w/r/t the bed   
+def bed()
+  puts "Do you climb the bedspread to get on top of the bed, or explore underneath?"
+
+  prompt; next_move = gets.chomp
+
+  if next_move.include? "q"
+    lose("Quitting now.")
+  elsif next_move.include? "climb" or next_move.include? "top"
+    on_top_bed()
+  elsif next_move.include? "explore" or next_move.include? "under"
+    under_bed()
+  elsif $typo < $typo_max
+    $typo += 1
+    puts "I didn't understand that."
+    hall()
+  else
+    lose("Maybe you could type better if you were fuzzy-butted.")
+  end 
+end
+
+# At the mirror
+def mirror()
+  puts "Look at that handsome weasel."
+  puts "Get a little closer, it's hard to see."
+  puts "Heh.  Nose prints on the mirror."
+  puts "So are you going to the bed, the chest of drawers, or back down the hall?"
+
+  prompt; next_move = gets.chomp
+
+  if next_move.include? "q"
+    lose("Quitting now.")
+  elsif next_move.include? "c" or next_move.include? "drawer"
+    chest_of_drawers()
+  elsif next_move.include? "bed"
+    bed()
+  elsif next_move.include? "hall" or next_move.include? "h"
+    hall()
+  elsif $typo < $typo_max
+    $typo += 1
+    puts "I didn't understand that."
+    hall()
+  else
+    lose("Perhaps your ferret could help you with your answers.")
+  end
+end
+
+# Decision making in the bedroom.
+def bedroom()
+  puts "On the far wall are two windows, with a chest of drawers and a laundry hamper in between."
+  puts "To your right is a bed with a nightstand."
+  puts "On your left is a mirror."
+  puts "Do you go right, left, or straight ahead?"
+  puts "Or do you turn around and go back down the hall?"
+
+  prompt; next_move = gets.chomp
+
+  if next_move.include? "q"
+    lose("You decided to quit.")
+  elsif next_move.include? "l"
+    mirror()
+  elsif next_move.include? "r"
+    bed()
+  elsif next_move.include? "s"
+    chest_of_drawers()
+  elsif next_move.include? "hall"
+    hall()
+  elsif $typo < $typo_max
+    $typo += 1
+    puts "I didn't understand that."
+    hall()
+  else
+    lose("Perhaps your ferret could help you with your answers.")
+  end
+end
+  
+
+# Decision making in the hall.
+def hall()
+  puts "At one end of the hall are the living and dining rooms."
+  puts "At the other end is the bedroom."
+  puts "In the middle of the hall are the bathroom and the kitchen."
+  puts "Where do you go next?"
+
+  prompt; next_move = gets.chomp
+
+  if next_move.include? "q"
+    lose("You decided to quit.")
+  elsif next_move.include? "bathroom" or next_move.include? "ba"
+    puts "Oops, the bathroom is under construction."
+    hall()
+  elsif next_move.include? "bedroom" or next_move.include? "br"
+    bedroom()
+  elsif next_move.include? "kitchen" or next_move.include? "k"
+    puts "Oops, the kitchen is under construction."
+    hall()
+  elsif next_move.include? "dining" or next_move.include? "dr"
+    dining_room()
+  elsif next_move.include? "living" or next_move.include? "lr"
+    living_room()
+  elsif $typo < $typo_max
+    $typo += 1
+    puts "I didn't understand that."
+    hall()
+  else
+    lose("Perhaps your ferret could help you with your answers.")
+  end
+end
+
+def dining_room()  
+  puts "Oops, the dining room is still under construction."
+  where_do_you_go()
+end
+
 # Code block to determine where player will go next.
 def where_do_you_go
   puts "Where do you go?"
@@ -202,22 +390,16 @@ def where_do_you_go
     lose("You decided to quit.")
   elsif next_move.include? "TV" or next_move.include? "tv" 
     tv_stand()
-#     incomplete_code()
-#  elsif next_move.include? "tv stand"
-#    tv_stand()
-#     incomplete_code()
+  elsif next_move.include? "living" or next_move.include? "lr"
+    living_room()
   elsif next_move.include? "sofa"
     sofa()
-#    incomplete_code()
   elsif next_move.include? "coffee table"
-#    coffee_table()
-    incomplete_code()
-  elsif next_move.include? "dining"
-#    dining_room()
-    incomplete_code()
+    coffee_table()
+  elsif next_move.include? "dining" or next_move.include? "dr"
+    dining_room()
   elsif next_move.include? "hall"
-#    hall()
-    incomplete_code()
+    hall()
   elsif $typo < $typo_max
     $typo += 1
     puts "I didn't understand that."
@@ -230,10 +412,30 @@ end
 # Decision making in the living room:
 def living_room()
   puts "You can see a TV stand, a sofa and a coffee table, and the cage you were first in."
-#  puts "On the floor there is a mousie, a jingle ball and a kong."  # later rev these will be %s and randomized.
+  if $on_the_floor.empty?
+    puts "There is nothing on the floor."
+  else
+    puts "On the floor there is #{$on_the_floor.join(", ")}."
+  end
   puts "The dining room is adjacent to the living room, but you can't see it well."
   puts "There is a hall leading away from the living and dining rooms."
-  where_do_you_go()
+  puts "Do you steal something or go somewhere?"
+
+  prompt; next_move = gets.chomp  
+
+  if next_move.include? "q"
+      lose("You decided to quit.")
+  elsif next_move.include?  "steal"
+    steal_thing($on_the_floor)
+  elsif next_move.include? "go" or next_move.include? "somewhere"  
+    where_do_you_go()
+  elsif $typo < $typo_max
+    $typo += 1
+    puts "I didn't understand that."
+    living_room()
+  else
+    lose("Perhaps your ferret could help you with your answers.")
+  end
 end
 
 # Ends game when player/ferret falls off the edge of the world.
@@ -242,6 +444,13 @@ def incomplete_code()
   puts "Have a little 'tone and mellow out."
   Process.exit(0)
 end 
+
+# Ends game when player/ferret has won.
+def win(why)
+  puts "#{why} You win, win, win!!  Bottle-brushed tail!!"
+  puts "War dancing all over the place!!!"
+  Process.exit(0)
+end
 
 # Ends game when player/ferret makes a bad decision (or just can't type)."
 def lose(why)
@@ -263,21 +472,26 @@ end
 
 def init()
 #  Defining global arrays for ferret stashes and things ferret player can find.
-$toys_list = ['mousie', 'jingle bell', 'crinkle ball', 'kong', 'barking dog', 'fleece ball', 'stuffed bear', 'stinky sock', 'TP tube', 'keys', 'TV remote']
+$toys_list = ['mousie', 'jingle bell', 'crinkle ball', 'kong', 'barking dog', 'fleece ball', 'stuffed bear', 'stinky sock', 'TP tube', 'keys', 'TV remote']  
 $table_stuff = %w{ wiimote keys glass }
-puts "Stuff on coffee table includes #{$table_stuff.join(", ")}."
+$knitting_bag = ['blue yarn', 'red yarn', 'bootie', 'hat']
+# puts "Stuff on coffee table includes #{$table_stuff.join(", ")}."
+$everything = $toys_list + $table_stuff + $knitting_bag
+# puts "Everything includes #{$everything.join(", ")}."
+
 
 $sofa_stash = Array.new
 $tv_stash = Array.new
 $bed_stash = Array.new  
 $typo_max = 3   # Set maximum bad entries before player gets dumped out of game.
-$typo = 0   # Initialize counter for bad input.
+$typo = 1   # Initialize counter for bad input.
 $yarn_balls = 2   # Number of balls of yarn in knitting basket.
 
 # Randomly distribute toys to the different stashes.
 load_stash($sofa_stash)
 load_stash($tv_stash)
 load_stash($bed_stash)
+$on_the_floor = $toys_list
 
 # puts "Sofa stash has the following: #{$sofa_stash}."
 # puts "Bed stash has the following: #{$bed_stash}."
